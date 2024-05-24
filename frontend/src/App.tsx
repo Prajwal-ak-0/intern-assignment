@@ -6,6 +6,8 @@ import InputContainer from './components/InputContainer';
 import { Message } from './types';
 import { RAG } from './utils/Rag'; // Adjust import as necessary
 import { GetHistory } from './utils/GetHistory'; // Adjust import as necessary
+import { SignIn, useSession } from '@clerk/clerk-react';
+
 
 const App: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -36,10 +38,16 @@ const App: React.FC = () => {
       console.error('Error fetching history:', error);
     }
   };
+  
+  const user = useSession();
 
   useEffect(() => {
     getHistory();
   }, []);
+
+  if(!user.isSignedIn){
+    return <div className='h-screen flex items-center justify-center'><SignIn/></div>
+  }
 
   return (
     <div className="flex flex-col h-screen">
