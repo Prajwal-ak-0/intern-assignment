@@ -1,18 +1,13 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException, Depends
+from typing import Annotated, List
 from fastapi.middleware.cors import CORSMiddleware
+from database import SessionLocal, engine
+from pydantic import BaseModel
+from sqlalchemy.orm import Session
+from models import UserCreate, User
+import models 
 
-
-todos = [
-    {
-        "id": "1",
-        "item": "Read a book."
-    },
-    {
-        "id": "2",
-        "item": "Cycle around town."
-    }
-]
-
+models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
@@ -20,7 +15,6 @@ origins = [
     "http://localhost:5173",
     "localhost:5173"
 ]
-
 
 app.add_middleware(
         CORSMiddleware,
@@ -30,48 +24,24 @@ app.add_middleware(
         allow_headers=["*"]
 )
 
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
-@app.get("/", tags=["root"])
-async def read_root() -> dict:
-    return {"message": "Welcome to your todo list."}
-
-
-@app.get("/todo", tags=["todos"])
-async def get_todos() -> dict:
-    return { "data": todos }
-
-
-@app.post("/todo", tags=["todos"])
-async def add_todo(todo: dict) -> dict:
-    todos.append(todo)
-    return {
-        "data": { "Todo added." }
-    }
-
-
-@app.put("/todo/{id}", tags=["todos"])
-async def update_todo(id: int, body: dict) -> dict:
-    for todo in todos:
-        if int(todo["id"]) == id:
-            todo["item"] = body["item"]
-            return {
-                "data": f"Todo with id {id} has been updated."
-            }
-
-    return {
-        "data": f"Todo with id {id} not found."
-    }
-
-
-@app.delete("/todo/{id}", tags=["todos"])
-async def delete_todo(id: int) -> dict:
-    for todo in todos:
-        if int(todo["id"]) == id:
-            todos.remove(todo)
-            return {
-                "data": f"Todo with id {id} has been removed."
-            }
-
-    return {
-        "data": f"Todo with id {id} not found."
-    }
+@app.post("/users/", response_model=UserCreate)
+def create_user(user: UserCreate, db: Session = Depends(get_db)):
+    db_user = User(
+        clerkId=user.clerkId,
+        email=user.email,
+        username=user.username,
+        links=user.links
+    )
+    db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
+    print("User created successfully")
+    print(db_user)
+    return db_user

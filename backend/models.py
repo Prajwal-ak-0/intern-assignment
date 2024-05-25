@@ -3,23 +3,32 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 import enum
 from datetime import datetime
-
-Base = declarative_base()
+from sqlalchemy import Boolean 
+from database import Base
+from pydantic import BaseModel, EmailStr
+from typing import List
 
 # Define the Sender Enum
 class Sender(enum.Enum):
     USER = "USER"
     BOT = "BOT"
 
+# Define the UserCreate model
+
+class UserCreate(BaseModel):
+    clerkId: str
+    email: EmailStr
+    username: str
+    links: List[str]
+
 # Define the User model
+
 class User(Base):
     __tablename__ = 'users'
     
     clerkId = Column(String, primary_key=True, unique=True, index=True)
     username = Column(String, unique=True, index=True)
     email = Column(String, unique=True, index=True)
-    apiKey = Column(String, unique=True, nullable=True)
-    isApiVerified = Column(Boolean, default=False)
     links = Column(ARRAY(String))
     documents = relationship("Document", back_populates="user")
     queries = relationship("Query", back_populates="user")
@@ -33,7 +42,6 @@ class Document(Base):
     clerkId = Column(String, ForeignKey('users.clerkId'))
     title = Column(String, nullable=True)
     link = Column(String, nullable=True)
-    createdAt = Column(DateTime, default=datetime.utcnow)
     user = relationship("User", back_populates="documents")
 
 # Define the Query model
@@ -43,7 +51,6 @@ class Query(Base):
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     clerkId = Column(String, ForeignKey('users.clerkId'))
     query = Column(String)
-    createdAt = Column(DateTime, default=datetime.utcnow)
     user = relationship("User", back_populates="queries")
 
 # Define the ChatHistory model
@@ -54,5 +61,4 @@ class ChatHistory(Base):
     clerkId = Column(String, ForeignKey('users.clerkId'))
     message = Column(String)
     sender = Column(Enum(Sender))
-    createdAt = Column(DateTime, default=datetime.utcnow)
     user = relationship("User", back_populates="chatHistory")
