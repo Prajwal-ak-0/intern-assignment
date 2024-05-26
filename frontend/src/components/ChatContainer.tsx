@@ -37,24 +37,28 @@ const ChatApp: React.FC = () => {
   const handleSend = async () => {
     if (input.trim()) {
       const userMessage: Message = { role: 'USER', content: input.trim() };
-      setChatMessages([...chatMessages, userMessage]);
+      setChatMessages((prevMessages) => [...prevMessages, userMessage]);
       setInput("");
       setIsLoading(true);
 
-      // Send a POST request to the backend
-      const response = await fetch(`http://localhost:8000/api/query`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ clerkId: user?.id ?? "", query: input.trim(), results: "" }),
-      });
-      const data = await response.json();
+      try {
+        // Send a POST request to the backend
+        const response = await fetch(`http://localhost:8000/api/query`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ clerkId: user?.id ?? "", query: input.trim(), results: "" }),
+        });
+        const data = await response.json();
 
-      // Add response to messages
-      if (data.results) {
-        const botMessage: Message = { role: 'BOT', content: data.results };
-        setChatMessages([...chatMessages, botMessage]);
+        // Add bot response to messages
+        if (data.results) {
+          const botMessage: Message = { role: 'BOT', content: data.results };
+          setChatMessages((prevMessages) => [...prevMessages, botMessage]);
+        }
+      } catch (error) {
+        console.error("Error fetching bot response:", error);
       }
 
       setIsLoading(false);
