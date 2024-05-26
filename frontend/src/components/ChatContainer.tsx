@@ -69,7 +69,7 @@ const ChatApp: React.FC = () => {
     <div className="flex flex-col h-screen relative">
       {isLoading && (
         <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 z-10">
-          <div className="loader">Loading...</div>
+          <div className="loader text-xl">Loading...</div>
         </div>
       )}
       <div className="flex-1 p-4 overflow-y-auto" ref={messagesContainerRef}>
@@ -77,8 +77,8 @@ const ChatApp: React.FC = () => {
           <div
             key={index}
             ref={index === chatMessages.length - 1 ? lastMessageRef : null}
-            className={`flex items-start gap-x-4 mb-4 p-4 w-full ${
-              message.role === 'USER' ? 'flex-row-reverse bg-emerald-50 border border-black/10' : 'bg-purple-100'
+            className={`flex items-start gap-x-4 mb-4 p-4 md:mx-28 ${
+              message.role === 'USER' ? ' bg-emerald-50 border border-black/10' : 'bg-purple-100'
             } rounded-lg`}
           >
             <img
@@ -86,7 +86,7 @@ const ChatApp: React.FC = () => {
               alt={message.role === 'USER' ? 'User' : 'Bot'}
               className="w-10 h-10 rounded-full"
             />
-            <p className="text-sm">{message.content}</p>
+            <p className="text-md font-normal">{message.content}</p>
           </div>
         ))}
       </div>
