@@ -43,7 +43,7 @@ const ChatApp: React.FC = () => {
 
       try {
         // Send a POST request to the backend
-        const response = await fetch(`http://localhost:8000/api/query`, {
+        const response = await fetch(`https://backend-1gkj.onrender.com/api/query`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
