@@ -1,16 +1,45 @@
 // src/App.tsx
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Navbar from "./components/Navbar";
 import ChatContainer from "./components/ChatContainer";
 import InputContainer from "./components/InputContainer";
 import { Message } from "./types";
-import { RAG } from "./utils/Rag"; // Adjust import as necessary
-// import { GetHistory } from './utils/GetHistory'; // Adjust import as necessary
-import { SignIn, useSession } from "@clerk/clerk-react";
+import { RAG } from "./utils/Rag"; 
+import { SignIn, useUser } from "@clerk/clerk-react";
 import { Toaster } from "sonner";
 
 const App: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
+  const { user, isSignedIn } = useUser();
+
+  const createUser = useCallback(async () => {
+    const data = {
+      clerkId: user?.id,
+      username: (user?.firstName + "-" + user?.lastName).replace(/\s+/g, '').toLowerCase(),
+      email: user?.primaryEmailAddress?.emailAddress,
+    };
+
+    const response = await fetch("http://localhost:8000/api/users/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (response.ok) {
+      console.log("User created successfully");
+    } else {
+      const errorData = await response.json();
+      console.error("Failed to create user:", errorData);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (isSignedIn) {
+      createUser();
+    }
+  }, [isSignedIn, createUser]);
 
   const handleSend = async (message: string) => {
     const userMessage: Message = { role: "USER", content: message };
@@ -24,28 +53,7 @@ const App: React.FC = () => {
     }
   };
 
-  // const getHistory = async () => {
-  //   try {
-  //     const history = await GetHistory();
-  //     if (Array.isArray(history)) {
-  //       const updatedHistory: Message[] = history.map((message) => ({
-  //         role: message.sender,
-  //         content: message.message,
-  //       }));
-  //       setMessages(updatedHistory);
-  //     }
-  //   } catch (error) {
-  //     console.error('Error fetching history:', error);
-  //   }
-  // };
-
-  const user = useSession();
-
-  // useEffect(() => {
-  //   getHistory();
-  // }, []);
-
-  if (!user.isSignedIn) {
+  if (!isSignedIn) {
     return (
       <div className="h-screen flex items-center justify-center">
         <SignIn />
@@ -56,7 +64,6 @@ const App: React.FC = () => {
   return (
     <div className="flex flex-col h-screen">
       <Toaster />
-
       <Navbar />
       <ChatContainer messages={messages} />
       <InputContainer onSend={handleSend} />

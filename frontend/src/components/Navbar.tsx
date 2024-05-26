@@ -4,7 +4,7 @@ import Logo from "./Logo";
 import { CirclePlus } from "lucide-react";
 import { initializeApp } from "firebase/app";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { toast } from 'sonner';
+import { toast } from "sonner";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAANgzdwU11UarseZPqm3npfYmi1KTADic",
@@ -20,18 +20,17 @@ const app = initializeApp(firebaseConfig);
 const storage = getStorage(app);
 
 const Navbar = () => {
-  const user = useUser();
+  const { user } = useUser();
 
   const [file, setFile] = useState<File | null>(null);
   const [buttonText, setButtonText] = useState<string>("Add Pdf");
-  const [link, setLink] = useState<string>("");
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setFile(e.target.files[0]);
-      setButtonText("Upload Now"); // Update button text when a file is selected
+      setButtonText("Upload Now");
     }
   };
 
@@ -50,10 +49,9 @@ const Navbar = () => {
       .then((url) => {
         console.log("File available at", url);
         toast.success("File uploaded successfully");
-        setLink(url);
-        setButtonText("Add Pdf"); // Reset button text after upload
-        setFile(null); // Clear the selected file
-        createUser(url); // Pass the URL directly to the createUser function
+        setButtonText("Add Pdf");
+        setFile(null);
+        createDocument(user?.id ?? "", url);
       })
       .catch((error) => {
         console.error("Upload failed:", error);
@@ -71,30 +69,31 @@ const Navbar = () => {
     }
   };
 
-  const createUser = async (fileLink: string) => {
-    const data = {
-      clerkId: user.user?.id,
-      username: (user.user?.firstName + "-" + user.user?.lastName).replace(/\s+/g, '').toLowerCase(),
-      email: user.user?.primaryEmailAddress?.emailAddress,
-      link: fileLink, // Use the fileLink parameter
-    };
-
-    const response = await fetch("https://jubilant-spork-w6rw5v6qrwxf5ggr-8000.app.github.dev/api/users/", {
+  const createDocument = async (clerkId: string, link: string) => {
+    
+    if(!clerkId) {
+      toast.error("User's clerkId not found");
+      console.error("User's clerkId not found");
+      return;
+    }
+    
+    const response = await fetch(`http://localhost:8000/api/link`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(data),
+      body: JSON.stringify({ clerkId, link }), // send clerkId and link
     });
 
     if (response.ok) {
-      toast.success("User created successfully");
-      console.log("User created successfully");
+      toast.success("Document created successfully");
+      console.log("Document created successfully");
     } else {
-      console.error("Failed to create user");
-      toast.error("Failed to create user");
+      const errorData = await response.json();
+      console.error("Failed to create document:", errorData);
+      toast.error("Failed to create document");
     }
-  };
+};
 
   return (
     <div className="flex w-full sm:py-2 py-1 sm:px-8 justify-between shadow-md">

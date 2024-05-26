@@ -25,6 +25,7 @@ connection_string = URL.create(
 
 try:
     engine = create_engine(connection_string)
+    print(engine)
     print("Database connection successful")
 except Exception as e:
     print(f"Database connection failed: {e}")
