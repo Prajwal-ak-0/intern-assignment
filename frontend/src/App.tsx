@@ -15,7 +15,7 @@ const App: React.FC = () => {
       email: user?.primaryEmailAddress?.emailAddress,
     };
 
-    const response = await fetch("https://backend-1gkj.onrender.com/api/users/", {
+    const response = await fetch("https://backend-1-e98u.onrender.com/api/users/", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
