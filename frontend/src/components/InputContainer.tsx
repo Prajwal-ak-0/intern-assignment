@@ -1,21 +1,35 @@
-// src/components/InputContainer.tsx
 import React, { useState } from "react";
 import { SendHorizontal } from "lucide-react";
+import { useUser } from "@clerk/clerk-react";
 
-interface InputContainerProps {
-  onSend: (message: string) => void;
-}
 
-const InputContainer: React.FC<InputContainerProps> = ({ onSend }) => {
+const InputContainer: React.FC = () => {
+  const { user } = useUser();
   const [input, setInput] = useState<string>("");
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setInput(event.target.value);
   };
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (input.trim()) {
-      onSend(input);
+
+      // Send a POST request to the backend
+      const response = await fetch(`http://localhost:8000/api/query`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ clerkId: user?.id ?? "", query: input }),
+      });
+
+      if (response.ok) {
+        console.log("Query created successfully");
+      } else {
+        const errorData = await response.json();
+        console.error("Failed to create query:", errorData);
+      }
+
       setInput("");
     }
   };
