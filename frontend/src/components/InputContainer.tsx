@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { SendHorizontal } from "lucide-react";
 import { useUser } from "@clerk/clerk-react";
 
-
 const InputContainer: React.FC = () => {
   const { user } = useUser();
   const [input, setInput] = useState<string>("");
@@ -13,22 +12,21 @@ const InputContainer: React.FC = () => {
 
   const handleSend = async () => {
     if (input.trim()) {
-
       // Send a POST request to the backend
-      const response = await fetch(`http://localhost:8000/api/query`, {
+      fetch(`http://localhost:8000/api/query`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ clerkId: user?.id ?? "", query: input }),
-      });
-
-      if (response.ok) {
-        console.log("Query created successfully");
-      } else {
-        const errorData = await response.json();
-        console.error("Failed to create query:", errorData);
-      }
+        body: JSON.stringify({ clerkId: user?.id ?? "", query: input, results:"" }),
+      })
+        .then((response) => {
+          console.log("Response:", response);
+          return response.json();
+        })
+        .then((data) => {
+          console.log("Data:", data);
+        });
 
       setInput("");
     }
