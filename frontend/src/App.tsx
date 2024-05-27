@@ -1,6 +1,5 @@
 // src/App.tsx
 import React, { useEffect, useCallback } from "react";
-import Navbar from "./components/Navbar";
 import ChatContainer from "./components/ChatContainer";
 import { SignIn, useUser } from "@clerk/clerk-react";
 import { Toaster } from "sonner";
@@ -48,7 +47,6 @@ const App: React.FC = () => {
   return (
     <div className="flex flex-col h-screen">
       <Toaster />
-      <Navbar />
       <ChatContainer/>
     </div>
   );

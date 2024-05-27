@@ -1,6 +1,7 @@
-import React, { useRef, useLayoutEffect, useState } from 'react';
+import React, { useRef, useLayoutEffect, useState } from "react";
 import { SendHorizontal } from "lucide-react";
 import { useUser } from "@clerk/clerk-react";
+import Navbar from "./Navbar";
 
 export type Message = {
   role: "USER" | "BOT";
@@ -20,7 +21,7 @@ const ChatApp: React.FC = () => {
       const messagesContainer = messagesContainerRef.current;
       const lastMessage = lastMessageRef.current;
       const offset = lastMessage.offsetTop - messagesContainer.offsetTop;
-      messagesContainer.scrollTo({ top: offset, behavior: 'smooth' });
+      messagesContainer.scrollTo({ top: offset, behavior: "smooth" });
     }
   };
 
@@ -36,7 +37,7 @@ const ChatApp: React.FC = () => {
 
   const handleSend = async () => {
     if (input.trim()) {
-      const userMessage: Message = { role: 'USER', content: input.trim() };
+      const userMessage: Message = { role: "USER", content: input.trim() };
       setChatMessages((prevMessages) => [...prevMessages, userMessage]);
       setInput("");
       setIsLoading(true);
@@ -48,13 +49,17 @@ const ChatApp: React.FC = () => {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ clerkId: user?.id ?? "", query: input.trim(), results: "" }),
+          body: JSON.stringify({
+            clerkId: user?.id ?? "",
+            query: input.trim(),
+            results: "",
+          }),
         });
         const data = await response.json();
 
         // Add bot response to messages
         if (data.results) {
-          const botMessage: Message = { role: 'BOT', content: data.results };
+          const botMessage: Message = { role: "BOT", content: data.results };
           setChatMessages((prevMessages) => [...prevMessages, botMessage]);
         }
       } catch (error) {
@@ -66,31 +71,36 @@ const ChatApp: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col h-screen relative">
-      {isLoading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 z-10">
-          <div className="loader text-xl">Loading...</div>
-        </div>
-      )}
-      <div className="flex-1 p-4 overflow-y-auto" ref={messagesContainerRef}>
-        {chatMessages.map((message, index) => (
-          <div
-            key={index}
-            ref={index === chatMessages.length - 1 ? lastMessageRef : null}
-            className={`flex items-start gap-x-4 mb-4 p-4 md:mx-28 ${
-              message.role === 'USER' ? ' bg-emerald-50 border border-black/10' : 'bg-purple-100'
-            } rounded-lg`}
-          >
-            <img
-              src={message.role === 'USER' ? '/user.png' : '/bot.png'}
-              alt={message.role === 'USER' ? 'User' : 'Bot'}
-              className="w-10 h-10 rounded-full"
-            />
-            <p className="text-md font-normal">{message.content}</p>
+<div className="flex flex-col h-screen">
+      <Navbar />
+      <div className="flex-1 relative overflow-hidden">
+        {isLoading && (
+          <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
+            <div className="animate-spin rounded-full h-32 w-32 border-t-4 border-b-4 border-purple-700"></div>
           </div>
-        ))}
+        )}
+        <div className="absolute my-28 inset-0 flex flex-col p-4 overflow-y-auto" ref={messagesContainerRef}>
+          {chatMessages.map((message, index) => (
+            <div
+              key={index}
+              ref={index === chatMessages.length - 1 ? lastMessageRef : null}
+              className={`flex items-start gap-x-4 mb-4 p-4 md:mx-28 ${
+                message.role === "USER"
+                  ? " bg-emerald-50 border border-black/10"
+                  : "bg-purple-100"
+              } rounded-lg`}
+            >
+              <img
+                src={message.role === "USER" ? "/user.png" : "/bot.png"}
+                alt={message.role === "USER" ? "User" : "Bot"}
+                className="w-10 h-10 rounded-full"
+              />
+              <p className="text-md font-normal">{message.content}</p>
+            </div>
+          ))}
+        </div>
       </div>
-      <div className="relative flex p-2 mx-36 my-6 rounded-xl border-t bg-[#E4E8EE]  border-gray-300">
+      <div className="fixed bottom-0 left-0 right-0 flex p-2 mx-36 my-6 rounded-xl border-t bg-[#E4E8EE] border-gray-300">
         <input
           type="text"
           value={input}

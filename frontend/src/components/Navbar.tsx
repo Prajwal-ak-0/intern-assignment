@@ -1,7 +1,7 @@
 import React, { useState, useRef } from "react";
 import { UserButton, useUser } from "@clerk/clerk-react";
 import Logo from "./Logo";
-import { CirclePlus } from "lucide-react";
+import { CirclePlus, UploadCloudIcon } from "lucide-react";
 import { initializeApp } from "firebase/app";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { toast } from "sonner";
@@ -70,13 +70,12 @@ const Navbar = () => {
   };
 
   const createDocument = async (clerkId: string, link: string) => {
-    
-    if(!clerkId) {
+    if (!clerkId) {
       toast.error("User's clerkId not found");
       console.error("User's clerkId not found");
       return;
     }
-    
+
     const response = await fetch(`http://localhost:8000/api/link`, {
       method: "POST",
       headers: {
@@ -93,27 +92,29 @@ const Navbar = () => {
       console.error("Failed to create document:", errorData);
       toast.error("Failed to create document");
     }
-};
+  };
 
   return (
-    <div className="flex w-full sm:py-2 py-1 sm:px-8 justify-between shadow-md">
-      <Logo />
-      <div className="flex">
-        <button
-          className="inline-flex items-center justify-center whitespace-nowrap gap-x-2 rounded-md sm:px-4 px-2 py-2 mt-2 sm:mr-8 mr-2 hover:bg-neutral-100 text-sm font-medium border border-input bg-background hover:bg-accent hover:text-accent-foreground"
-          onClick={handleButtonClick}
-        >
-          <CirclePlus />
-          <span className="max-sm:hidden">{buttonText}</span>
-        </button>
-        <UserButton afterSignOutUrl="/" />
+<div className="fixed top-0 w-full sm:py-2 py-1 sm:px-8 px-4 bg-white shadow-md z-10">
+      <div className="flex justify-between">
+        <Logo />
+        <div className="flex">
+          <button
+            className="inline-flex items-center justify-center whitespace-nowrap gap-x-2 rounded-md sm:px-4 px-2 py-2 mt-2 sm:mr-8 mr-2 hover:bg-neutral-100 text-sm font-medium border border-input bg-background hover:bg-accent hover:text-accent-foreground"
+            onClick={handleButtonClick}
+          >
+            {file ? <UploadCloudIcon /> : <CirclePlus />}
+            <span className="max-sm:hidden">{buttonText}</span>
+          </button>
+          <UserButton afterSignOutUrl="/" />
+        </div>
+        <input
+          type="file"
+          ref={fileInputRef}
+          onChange={handleFileChange}
+          style={{ display: "none" }}
+        />
       </div>
-      <input
-        type="file"
-        ref={fileInputRef}
-        onChange={handleFileChange}
-        style={{ display: "none" }}
-      />
     </div>
   );
 };
