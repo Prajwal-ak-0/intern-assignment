@@ -43,7 +43,6 @@ const ChatApp: React.FC = () => {
       setIsLoading(true);
 
       try {
-        // Send a POST request to the backend
         const response = await fetch(`https://backend-1-e98u.onrender.com/api/query`, {
           method: "POST",
           headers: {
@@ -57,7 +56,6 @@ const ChatApp: React.FC = () => {
         });
         const data = await response.json();
 
-        // Add bot response to messages
         if (data.results) {
           const botMessage: Message = { role: "BOT", content: data.results };
           setChatMessages((prevMessages) => [...prevMessages, botMessage]);
